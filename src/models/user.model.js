@@ -43,36 +43,5 @@ const userSchema = new Schema(
     }
 );
 
-// middlewares
-// securing password before sending to database
-userSchema.pre("save", async function (next) {
-
-    if (!this.isModified("password")) {
-        next()
-    }
-
-    try {
-        const saltRound = await bcrypt.genSalt(10)
-        const hashed_password = await bcrypt.hash(this.password, saltRound)
-        this.password = hashed_password
-    } catch (error) {
-        next(error)
-    }
-})
-
-// methods
-// JSON Web Token
-userSchema.methods.generateToken = async function () {
-    try {
-        return jwt.sign(
-            {
-                userId : this._id.toString(),
-                email  : this.email,
-            }
-        )
-    } catch (error) {
-        console.error(error)
-    }
-}
 
 export const User = mongoose.model("User", userSchema)

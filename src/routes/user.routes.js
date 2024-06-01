@@ -19,4 +19,6 @@ router.route("/register")
     })
 )
 
+router.post('/login', userControllers.loginUser);
+
 export default router

@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { asyncHandler } from "../utils/asynchandler.js";
 import versionControllers from "../controllers/version.controller.js";
+import auth from "../middlewares/auth.js";
 
 const router = Router({ mergeParams: true });
-//allows the child router to access parameters defined in the parent router.
+
+router.use(auth); // Apply authentication middleware for all version routes
 
 router.post("/", versionControllers.createVersion);
 router.get("/:versionId", versionControllers.getVersionById);

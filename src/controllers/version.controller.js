@@ -1,24 +1,18 @@
 import { asyncHandler } from "../utils/asynchandler.js";
 import { Version } from "../models/version.model.js";
-import { User } from "../models/user.model.js";
 import { Content } from "../models/content.model.js";
 
 const createVersion = asyncHandler(async (req, res) => {
-    // from frontend: userId, filePath, contentId from params
-    const { userId, filePath } = req.body;
+    const { filePath } = req.body;
     const { contentId } = req.params;
+    const userId = req.user._id; // Access user ID from req.user
 
     const content = await Content.findById(contentId);
     if (!content) {
         return res.status(404).json({ msg: "Content not found" });
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
-        return res.status(404).json({ msg: "User not found" });
-    }
-
-    const userRole = user.projectRoles.get(content.projectId.toString());
+    const userRole = req.user.projectRoles.get(content.projectId.toString());
     if (userRole !== 'editor' && userRole !== 'owner') {
         return res.status(403).json({ msg: "Permission Denied" });
     }
@@ -37,24 +31,19 @@ const createVersion = asyncHandler(async (req, res) => {
 
 const getVersionById = asyncHandler(async (req, res) => {
     const { versionId } = req.params;
-    const { userId } = req.body;
+    const { contentId } = req.params;
 
     const version = await Version.findById(versionId);
     if (!version) {
         return res.status(404).json({ msg: "Version not found" });
     }
 
-    const content = await Content.findById(version.contentId);
+    const content = await Content.findById(contentId);
     if (!content) {
         return res.status(404).json({ msg: "Content not found" });
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
-        return res.status(404).json({ msg: "User not found" });
-    }
-
-    const userRole = user.projectRoles.get(content.projectId.toString());
+    const userRole = req.user.projectRoles.get(content.projectId.toString());
     if (userRole !== 'owner' && userRole !== 'editor' && userRole !== 'member') {
         return res.status(403).json({ msg: "Permission Denied" });
     }
@@ -64,7 +53,8 @@ const getVersionById = asyncHandler(async (req, res) => {
 
 const updateVersion = asyncHandler(async (req, res) => {
     const { versionId } = req.params;
-    const { userId, filePath } = req.body;
+    const { filePath } = req.body;
+    const userId = req.user._id; // Access user ID from req.user
 
     const version = await Version.findById(versionId);
     if (!version) {
@@ -76,12 +66,7 @@ const updateVersion = asyncHandler(async (req, res) => {
         return res.status(404).json({ msg: "Content not found" });
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
-        return res.status(404).json({ msg: "User not found" });
-    }
-
-    const userRole = user.projectRoles.get(content.projectId.toString());
+    const userRole = req.user.projectRoles.get(content.projectId.toString());
     if (userRole !== 'owner' && userRole !== 'editor') {
         return res.status(403).json({ msg: "Permission Denied" });
     }
@@ -95,7 +80,7 @@ const updateVersion = asyncHandler(async (req, res) => {
 
 const deleteVersion = asyncHandler(async (req, res) => {
     const { versionId } = req.params;
-    const { userId } = req.body;
+    const userId = req.user._id; // Access user ID from req.user
 
     const version = await Version.findById(versionId);
     if (!version) {
@@ -107,12 +92,7 @@ const deleteVersion = asyncHandler(async (req, res) => {
         return res.status(404).json({ msg: "Content not found" });
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
-        return res.status(404).json({ msg: "User not found" });
-    }
-
-    const userRole = user.projectRoles.get(content.projectId.toString());
+    const userRole = req.user.projectRoles.get(content.projectId.toString());
     if (userRole !== 'owner') {
         return res.status(403).json({ msg: "Permission Denied" });
     }

@@ -4,79 +4,62 @@ import { Project } from "../models/project.model.js";
 
 // Create project and assign "owner" role:
 const createProject = asyncHandler(async (req, res) => {
-    // from frontend we get userid, projectName and projectDescription
-    const { userid, projectName, projectDescription } = req.body
-
-    const user = await User.findById(userid)
-    //Model.findById(id) (id can be string or ObjectId) : Method in Mongoose  
-    //returns a Mongoose Query object, which, when executed, resolves to the document that matches the given _id.
-
-    if (!user) {
-        return res.status(404).json({ msg: "User not found" })
-    }
+    // from frontend we get projectName and projectDescription
+    const { projectName, projectDescription } = req.body;
+    const userid = req.user._id;
 
     const newProject = await Project.create(
         {
             name: projectName,
             description: projectDescription,
-            members: [
-                {
-                    userId: userid,
-                    role: "owner"
-                }
-            ]
+            members:
+                [
+                    {
+                        userId: userid,
+                        role: "owner"
+                    }
+                ]
         }
-    )
+    );
 
-    user.projectRoles.set(newProject._id.toString(), 'owner')
-    await user.save()
+    req.user.projectRoles.set(newProject._id.toString(), 'owner');
+    await req.user.save();
 
-    res.status(201).json({ msg: "Project Created Succesfully", project: newProject })
-}) // works
+    res.status(201).json({ msg: "Project Created Successfully", project: newProject });
+}); // works
 
 // Join project and assign roles
 const joinProject = asyncHandler(async (req, res) => {
-    // from frontend, we get userid, projectId, and (new) role
-    const { userId, projectId, role } = req.body
+    // from frontend, we get projectId, and (new) role
+    const { projectId, role } = req.body;
+    const userId = req.user._id;
 
-    const user = await User.findById(userId)
-
-    if (!user) {
-        return res.status(404).json({ msg: "User not found" })
-    }
-
-    const project = await Project.findById(projectId)
-
+    const project = await Project.findById(projectId);
     if (!project) {
-        return res.status(404).json({ msg: "Project not found" })
+        return res.status(404).json({ msg: "Project not found" });
     }
 
     if (!['owner', 'editor', 'member'].includes(role)) {
-        return res.status(404).json({ msg: "Role not found" })
+        return res.status(404).json({ msg: "Role not found" });
     }
 
-    const memberIndex = project.members.findIndex(member => member.userId.toString() === userId.toString())
-    //array.findIndex(testFunction) : method in JS => to find the index of the first element in an array that satisfies a given test function.
-    //If no elements pass the test, it returns -1.
+    const memberIndex = project.members.findIndex(member => member.userId.toString() === userId.toString());
 
-
-    user.projectRoles.set(project._id.toString(), role)
+    req.user.projectRoles.set(project._id.toString(), role);
 
     if (memberIndex !== -1) {
         // member already exists: update role
-        project.members[memberIndex].role = role
-    }
-
-    else {
+        project.members[memberIndex].role = role;
+    } else {
         // Add new member if user is not already a member
         project.members.push({ userId, role });
     }
 
-    await user.save()
-    await project.save()
+    await req.user.save();
+    await project.save();
 
     res.status(200).json({ msg: "User added and updated in project successfully", project });
-}) // works
+}); // works
 
 // Get project by project ID
 const getProjectById = asyncHandler(async (req, res) => {
@@ -93,21 +76,16 @@ const getProjectById = asyncHandler(async (req, res) => {
 // Update project
 const updateProject = asyncHandler(async (req, res) => {
     const { projectId } = req.params;
-    const { userId, name, description } = req.body;
+    const { name, description } = req.body;
 
-    const user = await User.findById(userId);
-    if (!user) {
-        return res.status(404).json({ msg: "User not found" });
+    const userRole = req.user.projectRoles.get(projectId.toString());
+    if (userRole !== 'owner') {
+        return res.status(403).json({ msg: "Permission Denied" });
     }
 
     const project = await Project.findById(projectId);
     if (!project) {
         return res.status(404).json({ msg: "Project not found" });
-    }
-
-    const userRole = user.projectRoles.get(projectId.toString());
-    if (userRole !== 'owner') {
-        return res.status(403).json({ msg: "Permission Denied" });
     }
 
     project.name = name || project.name;
@@ -121,21 +99,15 @@ const updateProject = asyncHandler(async (req, res) => {
 // Delete project
 const deleteProject = asyncHandler(async (req, res) => {
     const { projectId } = req.params;
-    const { userId } = req.body;
 
-    const user = await User.findById(userId);
-    if (!user) {
-        return res.status(404).json({ msg: "User not found" });
+    const userRole = req.user.projectRoles.get(projectId.toString());
+    if (userRole !== 'owner') {
+        return res.status(403).json({ msg: "Permission Denied" });
     }
 
     const project = await Project.findById(projectId);
     if (!project) {
         return res.status(404).json({ msg: "Project not found" });
-    }
-
-    const userRole = user.projectRoles.get(projectId.toString());
-    if (userRole !== 'owner') {
-        return res.status(403).json({ msg: "Permission Denied" });
     }
 
     await project.remove();
@@ -144,5 +116,3 @@ const deleteProject = asyncHandler(async (req, res) => {
 });
 
 export default { createProject, joinProject, getProjectById, updateProject, deleteProject };
-
-
