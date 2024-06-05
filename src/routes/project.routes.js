@@ -12,7 +12,7 @@ const router = Router();
 router.route("/create").post(verifyToken, asyncHandler(projectControllers.createProject));
 
 // Route to join a project
-router.route("/join").post(verifyToken, asyncHandler(projectControllers.joinProject));
+router.route("/approve-user").post(verifyToken, asyncHandler(projectControllers.approveUser));
 
 // Route to get a project by ID
 router.route("/:projectId").get(verifyToken, asyncHandler(projectControllers.getProjectById));

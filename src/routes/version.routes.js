@@ -8,14 +8,17 @@ const router = Router({ mergeParams: true });
 // Middleware to authenticate requests
 router.use(verifyToken);
 
+// Get all versions
+router.get("/", versionControllers.getAllVersions)
+
 // Create new version
 router.post("/",
-upload.fields([
-    {
-        name: "file",
-        maxCount:1
-    }
-]), versionControllers.createVersion);
+    upload.fields([
+        {
+            name: "file",
+            maxCount: 1
+        }
+    ]), versionControllers.createVersion);
 
 // Get version by ID
 router.get("/:versionId", versionControllers.getVersionById);
@@ -25,5 +28,8 @@ router.put("/:versionId", versionControllers.updateVersion);
 
 // Delete version
 router.delete("/:versionId", versionControllers.deleteVersion);
+
+// Approve version
+router.post("/:versionId", versionControllers.approveVersion)
 
 export default router;
