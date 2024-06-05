@@ -15,7 +15,7 @@ app.use(
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
-app.use(cookieParser());
+app.use(cookieParser()); // to use cookie-parser
 
 // This is middleware configuration
 
@@ -50,7 +50,7 @@ export { app };
             "email":"",
             "password":""
         }
-        -> token1: 
+        -> token1: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2NWI1Y2FlZjBiYzQ3NTYzZTJiMzZiNyIsImlhdCI6MTcxNzI2MzYyNCwiZXhwIjoxNzE3MzUwMDI0fQ.DhXWd89fQ682GjkpA9h5kCsMcu0Mw_jmqwY86CG-6tM
         -> token2: 
     3. create project
         http://localhost:8000/api/v1/project/create
@@ -89,4 +89,7 @@ export { app };
         }
         
     9. try 6 and 7 again
+
+    access:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NjVkYTg4YjkwNDY5MzVhMDZjYjQ4NzkiLCJpYXQiOjE3MTc0MTQzMDEsImV4cCI6MTcxNzQxNzkwMX0.H4dm5LOHZXd-Y3c2v-yNPZaY6fQpLdKpHLK9PA7wxek
+    refresh:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NjVkYTg4YjkwNDY5MzVhMDZjYjQ4NzkiLCJpYXQiOjE3MTc0MTQzMDEsImV4cCI6MTcxODAxOTEwMX0.1XvLTMQTi65suhEg3Zt4ZK0uDiFgRZl3jSxRNTvu6T8
 */
